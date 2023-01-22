@@ -1,6 +1,10 @@
 // #include "../../bubble_sort_lib/bubble_sort.hpp"
-#include "../../insert_sort_lib/insert_sort.hpp"
+// #include "../../insert_sort_lib/insert_sort.hpp"
+
+#include "../../merge_sort_lib/merge_sort.hpp"
+
 #include <iostream>
+
 #include <string>
 
 int main()
@@ -11,7 +15,7 @@ int main()
         std::cin >> arr[x];
     }
 
-    insertion_sort(arr, 10);
+    merge_sort(arr, 0, 10);
 
     for (int x = 0; x < 10; x++) {
         std::cout << arr[x] << ' ';
