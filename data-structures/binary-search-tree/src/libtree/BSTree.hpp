@@ -183,7 +183,7 @@ std::ostream& Tree<KEYTYPE, VALTYPE>::print_preorder(std::ostream& os) const
     return os;
 }
 
-// comparing KEYS ONLY
+// comparing KEYS ONLY (just for testing)
 template <typename K, typename V>
 bool same(Tree<K, V>*& tree1, Tree<K, V>*& tree2)
 {
