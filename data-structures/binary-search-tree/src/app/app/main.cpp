@@ -4,32 +4,32 @@
 
 #include <string>
 
+#include <vector>
+
 using std::string;
 
 using std::cout;
 
 int main()
 {
-    Tree<string, int> tree("vika", 17);
+    Tree<int, bool> tree(5, 0);
 
-    tree.insert("ilya", 18);
-    tree.insert("vlad", 20);
-    tree.insert("danil", 21);
-    tree.insert("mom", 43);
-    tree.insert("z", 1);
-    tree.insert("y", 1);
+    tree.insert_list({{3, 0}, {4, 0}, {2, 0}, {7, 0}, {6, 0}});
 
-    tree.print(std::cout);
+    tree.print_preorder(cout);
 
-    // auto found = tree.find("mom");
+    cout << "DELETING\n";
+    tree.remove(3);
+    tree.remove(5);
+    tree.print_preorder(cout);
 
-    // cout << "found - " << found.first << '\t' << found.second << '\n';
+    cout << "FINDING 3 - " << tree.find(3).first << '\n';
 
     cout << '\n';
+    cout << "MAX - " << tree.max().first << '\n';
+    cout << "MIN - " << tree.min().first << '\n';
 
-    tree.remove("z");
-
-    tree.print(std::cout);
+    Tree<int, bool> newtree(tree);
 
     return 0;
 }
