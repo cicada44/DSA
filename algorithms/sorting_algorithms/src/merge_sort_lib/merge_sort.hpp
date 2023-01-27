@@ -1,16 +1,16 @@
 #include <iostream>
 
 template <typename A>
-void merge(A arr[], size_t left, size_t mid, size_t right)
+void merge(A* arr, int left, int mid, int right)
 {
-    A copy_arr[right];
-    for (size_t x = left; x < right; ++x) {
+    A copy_arr[right + 1];
+    for (int x = left; x <= right; ++x) {
         copy_arr[x] = arr[x];
     }
 
-    size_t l = left, r = mid + 1;
+    int l = left, r = mid + 1;
 
-    size_t i = left;
+    int i = left;
 
     while (l <= mid && r <= right) {
         if (copy_arr[l] <= copy_arr[r]) {
@@ -37,7 +37,7 @@ void merge(A arr[], size_t left, size_t mid, size_t right)
 }
 
 template <typename A>
-void merge_sort(A arr[], size_t beg, size_t end)
+void merge_sort(A* arr, int beg, int end)
 {
     if (beg < end) {
         int l = 0, r = end - 1, mid = (l + r) / 2;

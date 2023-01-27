@@ -13,12 +13,8 @@ int main()
 {
     int* arr = new int[10]{9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
-    // for (int x = 0; x < 10; x++) {
-    //     std::cin >> arr[x];
-    // }
-
-    // merge_sort(arr, 0, 10);
-    quick_sort(arr, 0, 9);
+    merge_sort(arr, 0, 10);
+    // quick_sort(arr, 0, 9);
 
     for (int x = 0; x < 10; x++) {
         std::cout << arr[x] << ' ';

@@ -1,26 +1,27 @@
 #include <iostream>
 
 template <typename T>
-size_t partition(T* arr, size_t beg, size_t end)
+size_t partition(T* arr, int low, int high)
 {
-    T pivot = arr[end];
-    size_t i = beg;
-    for (size_t x = beg; x != end; ++x) {
-        if (arr[x] < pivot) {
-            std::swap(arr[x], arr[i]);
-            ++i;
+    size_t pivot = arr[high];
+    size_t i = (low - 1);
+
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            std::swap(arr[i], arr[j]);
         }
     }
-    std::swap(arr[i], arr[end]);
-    return i;
+    std::swap(arr[i + 1], arr[high]);
+    return (i + 1);
 }
 
 template <typename T>
-void quick_sort(T* arr, size_t beg, size_t end)
+void quick_sort(T* arr, int low, int high)
 {
-    if (beg < end) {
-        size_t pivot = partition(arr, beg, end);
-        quick_sort(arr, beg, pivot - 1);
-        quick_sort(arr, pivot + 1, end);
+    if (low < high) {
+        size_t pi = partition(arr, low, high);
+        quick_sort(arr, low, pi - 1);
+        quick_sort(arr, pi + 1, high);
     }
 }
