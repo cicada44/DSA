@@ -18,14 +18,21 @@
 
 - ## **Bubble sort**
 
-    | Complexities         | Best case   | Average case    | Worst case |
-    | -------------------- | ----------- | --------------- | ---------- |
-    | **Time complexity**  | $\Omega(n)$ | $\theta(n^{2})$ | $O(n^{2})$ |
-    | **Space complexity** | $O(1)$      | $O(1)$          | $O(1)$     |
+    | Complexities         | Average case    | Worst case |
+    | -------------------- | --------------- | ---------- |
+    | **Time complexity**  | $\theta(n^{2})$ | $O(n^{2})$ |
+    | **Space complexity** | $O(1)$          | $O(1)$     |
 
 - ## **Insertion sort**
 
-    | Complexities         | Best case   | Average case    | Worst case |
-    | -------------------- | ----------- | --------------- | ---------- |
-    | **Time complexity**  | $\Omega(n)$ | $\theta(n^{2})$ | $O(n^{2})$ |
-    | **Space complexity** | $O(1)$      | $O(1)$          | $O(1)$     |
+    | Complexities         | Average case    | Worst case |
+    | -------------------- | --------------- | ---------- |
+    | **Time complexity**  | $\theta(n^{2})$ | $O(n^{2})$ |
+    | **Space complexity** | $O(1)$          | $O(1)$     |
+
+- ## **Quick sort**
+
+    | Complexities         | Average case | Worst case |
+    | -------------------- | ------------ | ---------- |
+    | **Time complexity**  | $O(nlog(n))$ | $O(n^2)$   |
+    | **Space complexity** | $O(log(n))$  | $O(n)$     |
