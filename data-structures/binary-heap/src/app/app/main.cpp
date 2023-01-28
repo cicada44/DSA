@@ -12,14 +12,7 @@ int main()
 {
     Heap<int, string> heap(10);
 
-    heap.add_list(
-            {{1, "a"},
-             {2, "b"},
-             {3, "c"},
-             {4, "d"},
-             {5, "e"},
-             {6, "f"},
-             {7, "g"}});
+    heap.add_list({{1, "a"}, {2, "b"}, {3, "c"}, {4, "d"}, {5, "e"}});
 
     cout << heap;
 
