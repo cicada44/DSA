@@ -12,15 +12,15 @@ int main()
 {
     Heap<int, string> heap(10);
 
-    heap.add_list({{1, "a"}, {2, "b"}, {3, "c"}, {4, "d"}, {5, "e"}});
-
-    cout << heap;
-
-    heap.increase_key(2, 8);
-
-    cout << heap;
-
-    heap.extract_max();
+    heap.add_list(
+            {{7, "a"},
+             {5, "b"},
+             {4, "c"},
+             {2, "d"},
+             {0, "e"},
+             {1, "f"},
+             {3, "g"},
+             {-1, "h"}});
 
     cout << heap;
 

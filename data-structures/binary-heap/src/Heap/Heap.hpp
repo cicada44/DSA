@@ -10,9 +10,6 @@ class Heap {
     friend std::ostream& operator<<(std::ostream& os, const Heap<KT, VT>& heap);
 
     template <typename KT, typename VT>
-    friend std::ostream& print_recursive(std::ostream& os, size_t lvl);
-
-    template <typename KT, typename VT>
     friend bool operator==(const Heap<KT, VT>& h1, const Heap<KT, VT>& h2);
 
 public:
@@ -40,7 +37,7 @@ public:
 private:
     size_t find_index(const K& key) const;
     void heapify_up(const size_t index);
-    void heapify_down(const size_t index);
+    void heapify_down(size_t index);
 
     std::pair<K, V>* const arr;
     size_t size;
@@ -69,10 +66,20 @@ void Heap<K, V>::heapify_up(const size_t index)
 }
 
 template <typename K, typename V>
-void Heap<K, V>::heapify_down(const size_t index)
+void Heap<K, V>::heapify_down(size_t index)
 {
-    for (size_t i = index; i < size && arr[i * 2 + 2] > arr[i]; i = i * 2 + 2) {
-        std::swap(arr[i], arr[i * 2 + 2]);
+    while (1) {
+        size_t left = 2 * index + 1;
+        size_t right = 2 * index + 2;
+        size_t largest = index;
+        if (left <= size && arr[left].first > arr[largest].first)
+            largest = left;
+        if (right <= size && arr[right].first > arr[largest].first)
+            largest = right;
+        if (largest == index)
+            break;
+        std::swap(arr[index], arr[largest]);
+        index = largest;
     }
 }
 
@@ -127,7 +134,9 @@ std::pair<K, V> Heap<K, V>::extract_max()
 
     std::pair<K, V> extracted_max = arr[0];
 
-    arr[0] = arr[--size];
+    arr[0] = arr[size - 1];
+
+    --size;
 
     heapify_down(0);
 
@@ -137,7 +146,6 @@ std::pair<K, V> Heap<K, V>::extract_max()
 template <typename K, typename V>
 std::ostream& operator<<(std::ostream& os, const Heap<K, V>& heap)
 {
-    os << "size - " << heap.size << '\n';
     for (size_t c = 0; c != heap.size; ++c) {
         os << heap.arr[c].first << ' ' << heap.arr[c].second << '\n';
     }
