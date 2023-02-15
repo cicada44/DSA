@@ -52,14 +52,22 @@ public:
     void push_back(const T& push_node)
     {
         if (size == capacity) {
-            T* helper = new T[capacity];
-            copy_helper(helper, dynamic_table, capacity);
+            T* helper = new T[size];
 
-            dynamic_table = new T[capacity * 2];
+            copy_helper(helper, dynamic_table, size);
 
-            copy_helper(dynamic_table, helper, capacity);
+            delete[] dynamic_table;
+
+            dynamic_table = new T[size * 2];
+
+            copy_helper(dynamic_table, helper, size);
+
+            delete[] helper;
 
             capacity *= 2;
+
+            // std::cout << "realloc arr size - " << *helper << "capa - "
+            //   << capacity << '\n';
         }
 
         dynamic_table[size] = push_node;
