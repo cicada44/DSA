@@ -49,6 +49,15 @@ public:
         }
     }
 
+    T& operator[](size_t ind)
+    {
+        try {
+            return dynamic_table[ind];
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+    }
+
     void push_back(const T& push_node)
     {
         if (size == capacity) {
@@ -65,15 +74,44 @@ public:
             delete[] helper;
 
             capacity *= 2;
-
-            // std::cout << "realloc arr size - " << *helper << "capa - "
-            //   << capacity << '\n';
         }
 
         dynamic_table[size] = push_node;
 
         ++size;
     }
+
+    void pop_back()
+    {
+        dynamic_table[size - 1] = 0;
+        --size;
+    }
+
+    bool contains_node(const T& node) const
+    {
+        for (int x = 0; x != size; ++x) {
+            if (node == dynamic_table[x]) {
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    T& find(const T& node)
+    {
+        for (size_t x = 0; x != size; ++x) {
+            if (dynamic_table[x] == node) {
+                return dynamic_table[x];
+            }
+        }
+
+        return dynamic_table[size + 1];
+    }
+
+    // void remove(const T& node)
+    // {
+    // }
 
 private:
     T* dynamic_table;
