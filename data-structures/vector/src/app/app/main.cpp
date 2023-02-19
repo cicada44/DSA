@@ -2,20 +2,26 @@
 
 #include "../../libvector/Vector.hpp"
 
-int main()
+void remove()
 {
     Vector<int> vec{1, 2, 3, 4, 5};
 
-    std::cout << "size - " << vec.size_() << '\n';
-    std::cout << "capacity - " << vec.capacity_() << '\n';
-    std::cout << vec;
+    // vec.remove(90);
 
-    vec.push_back(6);
-    vec.push_back(7);
+    std::cout << vec << '\n' << (vec.end() == vec.remove(90)) << '\n';
+}
 
-    vec[0] = 0;
+void copy_constructor()
+{
+    Vector<int> vec{1, 2, 3, 4, 5};
 
-    vec.find(3) = 0;
+    Vector<int> v_cpy(vec);
 
-    std::cout << vec;
+    std::cout << v_cpy;
+}
+
+int main()
+{
+    // remove();
+    copy_constructor();
 }
