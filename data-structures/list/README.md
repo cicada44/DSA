@@ -10,5 +10,4 @@
     cmake --preset <PRESET_NAME>
 
 ## **Build**:
-
     cmake --build --preset <PRESET_NAME>

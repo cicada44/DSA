@@ -27,7 +27,7 @@ class list {
 public:
     list() : head(nullptr), tail(nullptr), size_(0) {}
 
-    list(const std::initializer_list<T>& init) {
+    inline list(const std::initializer_list<T>& init) {
         for (const auto& c : init) {
             push_back(c);
         }
@@ -39,6 +39,7 @@ public:
     list(list<T>&& l) {
         std::swap(head, l.head);
         std::swap(tail, l.tail);
+        std::swap(size_, l.size_);
     }
 
     list<T>& operator=(list<T>& l) {
@@ -51,6 +52,7 @@ public:
     list<T>& operator=(list<T>&& l) {
         std::swap(head, l.head);
         std::swap(tail, l.tail);
+        std::swap(size_, l.size_);
 
         return *this;
     }
@@ -63,14 +65,26 @@ public:
     node<T>* begin() const;
     node<T>* end() const;
 
+    const node<T>* cbegin() const;
+    const node<T>* cend() const;
+
     void push_back(const T& value);
     void push_front(const T& value);
 
     void pop_back();
     void pop_front();
-    void remove_first(const T& v);
+
+    list<T>& erase(const size_t idx);
+    list<T>& erase_first(const T& v);
+    list<T>& erase_last(const T& v);
+
+    list<T>& unique();
 
     bool contains(const T& v) const;
+    size_t count(const T& v) const;
+
+    node<T>& operator[](const size_t idx);
+    const node<T>& operator[](const size_t idx) const;
 
     void clear();
     void copy(const list<T>& l);
@@ -84,31 +98,43 @@ private:
     size_t size_ = 0;
 };
 
-// Returns true if list is empty.
+/* Returns true if list is empty. */
 template <typename T>
 bool list<T>::is_empty() const {
     return (head == nullptr);
 }
 
-// Returns number of elements in the list.
+/* Returns number of elements in the list. */
 template <typename T>
 size_t list<T>::size() const {
     return size_;
 }
 
-// Returns pointer to first element in the list.
+/* Returns pointer to first element in the list. */
 template <typename T>
 node<T>* list<T>::begin() const {
     return head;
 }
 
-// Returns pointer to first element in the list.
+/* Returns pointer to first element in the list. */
 template <typename T>
 node<T>* list<T>::end() const {
     return tail;
 }
 
-// Add element to the end of the list.
+/* Returns constant pointer on first element in the list. */
+template <typename T>
+const node<T>* list<T>::cbegin() const {
+    return const_cast<const node<T>* const>(head);
+}
+
+/* Returns constant pointer on first element in the list. */
+template <typename T>
+const node<T>* list<T>::cend() const {
+    return const_cast<const node<T>* const>(tail);
+}
+
+/* Add element to the end of the list. */
 template <typename T>
 void list<T>::push_back(const T& value) {
     node<T>* new_node = nullptr;
@@ -129,8 +155,8 @@ void list<T>::push_back(const T& value) {
     ++size_;
 }
 
-// Removes element from the end of the list.
-// Returns void.
+/* Removes element from the end of the list.
+   Returns void. */
 template <typename T>
 void list<T>::pop_back() {
     if (is_empty()) {
@@ -158,8 +184,8 @@ void list<T>::pop_back() {
     --size_;
 }
 
-// Adds element to the front of the list.
-// Returns void.
+/* Adds element to the front of the list.
+   Returns void. */
 template <typename T>
 void list<T>::push_front(const T& value) {
     node<T>* new_front_val = nullptr;
@@ -173,6 +199,7 @@ void list<T>::push_front(const T& value) {
     node<T>* temp_head = head;
 
     if (is_empty()) {
+        ++size_;
         head = tail = new_front_val;
         return;
     }
@@ -183,8 +210,8 @@ void list<T>::push_front(const T& value) {
     ++size_;
 }
 
-// Removes element from the front of the list.
-// Returns void.
+/* Removes element from the front of the list.
+   Returns void. */
 template <typename T>
 void list<T>::pop_front() {
     if (is_empty()) {
@@ -197,17 +224,46 @@ void list<T>::pop_front() {
     --size_;
 }
 
-// Removes the first encountered elements with value v.
-// Returns void.
+/* Removes the first encountered elements with value v.
+   Returns void. */
 template <typename T>
-void list<T>::remove_first(const T& v) {
+list<T>& list<T>::erase(const size_t idx) {
     if (is_empty()) {
-        return;
+        return *this;
+    }
+
+    if (idx == 0) {
+        pop_front();
+        return *this;
+    }
+
+    node<T>* temp_head = &(*this)[idx - 1];
+
+    if (temp_head->next == nullptr) {
+        return *this;
+    }
+
+    node<T>* rem = temp_head->next;
+    temp_head->next = temp_head->next->next;
+
+    delete rem;
+
+    --size_;
+
+    return *this;
+}
+
+/* Removes the first encountered elements with value v.
+   Returns void. */
+template <typename T>
+list<T>& list<T>::erase_first(const T& v) {
+    if (is_empty()) {
+        return *this;
     }
 
     if (head->value == v) {
         pop_front();
-        return;
+        return *this;
     }
 
     node<T>* temp_head = head;
@@ -217,7 +273,7 @@ void list<T>::remove_first(const T& v) {
     }
 
     if (temp_head->next == nullptr) {
-        return;
+        return *this;
     }
 
     node<T>* rem = temp_head->next;
@@ -226,10 +282,67 @@ void list<T>::remove_first(const T& v) {
     delete rem;
 
     --size_;
+
+    return *this;
 }
 
-// Checks if an element is in the list.
-// Returns 1 if element's containing.
+/* Removes the last encountered elements with value v.
+   Returns void. */
+template <typename T>
+list<T>& list<T>::erase_last(const T& v) {
+    if (is_empty()) {
+        return *this;
+    }
+
+    if ((head->value == v && count(v) == 1)) {
+        pop_front();
+        return *this;
+    }
+
+    node<T>* temp_head = head;
+    node<T>* nbeforedeleted = nullptr;
+
+    while (temp_head->next != nullptr) {
+        if (temp_head->next->value == v) {
+            nbeforedeleted = temp_head;
+        }
+        temp_head = temp_head->next;
+    }
+
+    if (nbeforedeleted == nullptr) {
+        return *this;
+    }
+
+    node<T>* rem = nbeforedeleted->next;
+    nbeforedeleted->next = nbeforedeleted->next->next;
+
+    delete rem;
+
+    --size_;
+
+    return *this;
+}
+
+template <typename T>
+list<T>& list<T>::unique() {
+    node<T>* temp_head = head;
+
+    size_t idx_counter = 0;
+
+    while (temp_head->next != nullptr) {
+        if (temp_head->value == temp_head->next->value) {
+            erase(idx_counter + 1);
+            continue;
+        }
+        ++idx_counter;
+        temp_head = temp_head->next;
+    }
+
+    return *this;
+}
+
+/* Checks if an element is in the list.
+   Returns 1 if element's containing. */
 template <typename T>
 bool list<T>::contains(const T& v) const {
     if (is_empty()) {
@@ -248,7 +361,52 @@ bool list<T>::contains(const T& v) const {
     return false;
 }
 
-// Similar to ~list().
+/* Return number of elements with value v in list. */
+template <typename T>
+size_t list<T>::count(const T& v) const {
+    size_t count = 0;
+
+    node<T>* temp_head = head;
+
+    while (temp_head != nullptr) {
+        if (temp_head->value == v) {
+            ++count;
+        }
+        temp_head = temp_head->next;
+    }
+
+    return count;
+}
+
+/* Return reference to element in list[idx]. */
+template <typename T>
+node<T>& list<T>::operator[](const size_t idx) {
+    node<T>* temp_head = head;
+    size_t beg = 0;
+
+    while (beg != idx && temp_head != nullptr) {
+        temp_head = temp_head->next;
+        ++beg;
+    }
+
+    return *temp_head;
+}
+
+/* Return const reference to element in list[idx]. */
+template <typename T>
+const node<T>& list<T>::operator[](const size_t idx) const {
+    node<T>* temp_head = head;
+    size_t beg = 0;
+
+    while (beg != idx && temp_head != nullptr) {
+        temp_head = temp_head->next;
+        ++beg;
+    }
+
+    return *temp_head;
+}
+
+/* Similar to ~list(). */
 template <typename T>
 void list<T>::clear() {
     while (head) {
@@ -257,7 +415,7 @@ void list<T>::clear() {
     tail = nullptr;
 }
 
-// Copies l to the actual list.
+/* Copies l to the actual list. */
 template <typename T>
 void list<T>::copy(const list<T>& l) {
     if (l.head != nullptr) {
@@ -272,7 +430,7 @@ void list<T>::copy(const list<T>& l) {
     }
 }
 
-// Add l to the end of the actual list.
+/* Add l to the end of the actual list. */
 template <typename T>
 void list<T>::merge(const list<T>& l) {
     node<T>* iter = l.head;
@@ -283,11 +441,12 @@ void list<T>::merge(const list<T>& l) {
     }
 }
 
-// Add l to the end of the actual list.
+/* Add l to the end of the actual list. */
 template <typename T>
 void list<T>::merge(list<T>&& l) {
     std::swap(tail->next, l.head);
     std::swap(tail, l.tail);
+    size_ += l.size_;
 }
 
 template <typename T>
@@ -307,6 +466,10 @@ std::ostream& print_list(std::ostream& os, forward_list::list<T>& l) {
 // Just for testing.
 template <typename T>
 bool operator==(const list<T>& lst1, const list<T>& lst2) {
+    if (lst1.size() != lst2.size()) {
+        return false;
+    }
+
     for (auto cntr1 = lst1.head, cntr2 = lst2.head;
          cntr1 != nullptr && cntr2 != nullptr;
          cntr1 = cntr1->next, cntr2 = cntr2->next) {
@@ -314,6 +477,7 @@ bool operator==(const list<T>& lst1, const list<T>& lst2) {
             return false;
         }
     }
+
     return true;
 }
 
