@@ -6,13 +6,15 @@ size_t partition(T* arr, int low, int high)
     size_t pivot = arr[high];
     size_t i = (low - 1);
 
-    for (int j = low; j <= high - 1; j++) {
+    for (int j = low; j <= high - 1; ++j) {
         if (arr[j] < pivot) {
             i++;
             std::swap(arr[i], arr[j]);
         }
     }
+
     std::swap(arr[i + 1], arr[high]);
+
     return (i + 1);
 }
 

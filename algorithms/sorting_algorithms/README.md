@@ -36,3 +36,17 @@
     | -------------------- | ------------ | ---------- |
     | **Time complexity**  | $O(nlog(n))$ | $O(n^2)$   |
     | **Space complexity** | $O(log(n))$  | $O(n)$     |
+
+- ## **Merge sort**
+
+    | Complexities         | Average case | Worst case   |
+    | -------------------- | ------------ | ------------ |
+    | **Time complexity**  | $O(nlog(n))$ | $O(nlog(n))$ |
+    | **Space complexity** | $O(n)$       | $O(n)$       |
+
+- ## **Heap sort**
+
+    | Complexities         | Average case | Worst case   |
+    | -------------------- | ------------ | ------------ |
+    | **Time complexity**  | $O(nlog(n))$ | $O(nlog(n))$ |
+    | **Space complexity** | $O(1)$       | $O(1)$       |
