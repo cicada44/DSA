@@ -40,7 +40,7 @@ template <typename A>
 void merge_sort(A* arr, int beg, int end)
 {
     if (beg < end) {
-        int l = 0, r = end - 1, mid = (l + r) / 2;
+        int l = beg, r = end, mid = (l + r) / 2;
 
         merge_sort(arr, l, mid);
         merge_sort(arr, mid + 1, r);
