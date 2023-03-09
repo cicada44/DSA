@@ -1,1 +1,1 @@
-# Own developed algorithms and data structures (C++)
+# Algorithms and data structures implemented in C++
