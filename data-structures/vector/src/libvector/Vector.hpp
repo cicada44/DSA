@@ -30,7 +30,7 @@ public:
         }
     }
 
-    Vector(const T* const arr, size_t s) : Vector()
+    Vector(const T* const arr, size_t s) : Vector(s)
     {
         for (size_t i = 0; i != s; ++i) {
             push_back(arr[i]);

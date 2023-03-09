@@ -1,7 +1,6 @@
 #pragma once
 
 #include <utility>
-
 #include <new>
 
 #include <iostream>
@@ -14,7 +13,7 @@ struct node {
     node<T>* next;
 };
 
-namespace forward_list {
+namespace list {
 
 template <typename T>
 class list {
@@ -225,7 +224,7 @@ void list<T>::pop_front() {
 }
 
 /* Removes the first encountered elements with value v.
-   Returns void. */
+   Returns reference to the current list. */
 template <typename T>
 list<T>& list<T>::erase(const size_t idx) {
     if (is_empty()) {
@@ -254,7 +253,7 @@ list<T>& list<T>::erase(const size_t idx) {
 }
 
 /* Removes the first encountered elements with value v.
-   Returns void. */
+   Returns reference to the current list. */
 template <typename T>
 list<T>& list<T>::erase_first(const T& v) {
     if (is_empty()) {
@@ -287,7 +286,7 @@ list<T>& list<T>::erase_first(const T& v) {
 }
 
 /* Removes the last encountered elements with value v.
-   Returns void. */
+   Returns reference to the current list. */
 template <typename T>
 list<T>& list<T>::erase_last(const T& v) {
     if (is_empty()) {
@@ -323,6 +322,8 @@ list<T>& list<T>::erase_last(const T& v) {
     return *this;
 }
 
+/* Removes all consecutive duplicate elements from the container.
+   Returns reference to the current list. */
 template <typename T>
 list<T>& list<T>::unique() {
     node<T>* temp_head = head;
@@ -415,7 +416,7 @@ void list<T>::clear() {
     tail = nullptr;
 }
 
-/* Copies l to the actual list. */
+/* Copies l to the current list. */
 template <typename T>
 void list<T>::copy(const list<T>& l) {
     if (l.head != nullptr) {
@@ -430,7 +431,7 @@ void list<T>::copy(const list<T>& l) {
     }
 }
 
-/* Add l to the end of the actual list. */
+/* Add l to the end of the current list. */
 template <typename T>
 void list<T>::merge(const list<T>& l) {
     node<T>* iter = l.head;
@@ -441,7 +442,7 @@ void list<T>::merge(const list<T>& l) {
     }
 }
 
-/* Add l to the end of the actual list. */
+/* Add l to the end of the current list. */
 template <typename T>
 void list<T>::merge(list<T>&& l) {
     std::swap(tail->next, l.head);
@@ -450,7 +451,7 @@ void list<T>::merge(list<T>&& l) {
 }
 
 template <typename T>
-std::ostream& print_list(std::ostream& os, forward_list::list<T>& l) {
+std::ostream& print_list(std::ostream& os, list<T>& l) {
     node<T>* head_iter = l.head;
     while (head_iter != nullptr) {
         os << head_iter->value;
@@ -481,4 +482,4 @@ bool operator==(const list<T>& lst1, const list<T>& lst2) {
     return true;
 }
 
-};    // namespace forward_list
+};    // namespace list
