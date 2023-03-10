@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include <string>
+
 template <typename T>
 class Vector {
     template <typename TYPE>
@@ -45,22 +47,33 @@ public:
 
     size_t size_() const;
     size_t capacity_() const;
+    bool empty() const noexcept;
+
+    void reserve(const size_t new_capa);
+    void shrink_to_fit();
 
     T* begin() const;
     T* end() const;
     const T* cbegin() const;
     const T* cend() const;
 
-    const T& operator[](size_t ind) const;
-    T& operator[](size_t ind);
+    const T& operator[](size_t ind) const noexcept;
+    T& operator[](size_t ind) noexcept;
+
+    const T& at(const size_t pos) const;
+    T& at(const size_t pos);
+
+    T* data() const;
 
     void push_back(const T& push_node);
-    void pop_back();
+    void insert(T* pos, const T& value);
 
     bool contains_node(const T& node) const;
     T* find(const T& node);
 
     T* remove(const T& node);
+    void clear() noexcept;
+    void pop_back();
 
 private:
     T* dynamic_table;
@@ -68,7 +81,10 @@ private:
     size_t size;
     size_t capacity;
 
-    void copy_helper(T*& t1, T*& t2, const size_t n);
+    void copy_helper(T*& t1, const T* const& t2, const size_t n);
+    void valid_idx(
+            const size_t idx,
+            const std::string& msg = std::string("index is out of size")) const;
 };
 
 template <typename T>
@@ -77,60 +93,136 @@ Vector<T>::~Vector()
     delete[] dynamic_table;
 }
 
+/* Returns size of actual vector. */
 template <typename T>
 size_t Vector<T>::size_() const
 {
     return size;
 }
 
+/* Returns capacity of actual vector. */
 template <typename T>
 size_t Vector<T>::capacity_() const
 {
     return capacity;
 }
 
+/* Returns 1 if vector is empty, 0 - if doesn't. */
+template <typename T>
+bool Vector<T>::empty() const noexcept
+{
+    return (size == 0);
+}
+
+/* Reserves memory for vector if new_capa > capa. */
+template <typename T>
+void Vector<T>::reserve(const size_t new_capa)
+{
+    if (new_capa > capacity) {
+        T* temp = new T[size];
+        copy_helper(temp, dynamic_table, size);
+
+        delete[] dynamic_table;
+
+        try {
+            dynamic_table = new T[new_capa];
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+
+        copy_helper(dynamic_table, temp, size);
+        delete[] temp;
+
+        capacity = new_capa;
+    }
+}
+
+/* Requests the removal of unused capacity. */
+template <typename T>
+void Vector<T>::shrink_to_fit()
+{
+    T* temp = new T[size];
+    copy_helper(temp, dynamic_table, size);
+
+    delete[] dynamic_table;
+
+    try {
+        dynamic_table = new T[size];
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+    }
+
+    copy_helper(dynamic_table, temp, size);
+    delete[] temp;
+
+    capacity = size;
+}
+
+/* Returns pointer to begin of the actual vector. */
 template <typename T>
 T* Vector<T>::begin() const
 {
     return dynamic_table;
 }
 
+/* Returns pointer to end of the actual vector. */
 template <typename T>
 T* Vector<T>::end() const
 {
     return (dynamic_table + size);
 }
 
+/* Returns constant pointer to begin of the actual vector. */
 template <typename T>
 const T* Vector<T>::cbegin() const
 {
     return dynamic_table;
 }
 
+/* Returns constant pointer to end of the actual vector. */
 template <typename T>
 const T* Vector<T>::cend() const
 {
     return (dynamic_table + size);
 }
 
+/* Return constant reference to the element at index idx. */
 template <typename T>
-const T& Vector<T>::operator[](size_t ind) const
+const T& Vector<T>::operator[](const size_t idx) const noexcept
 {
-    try {
-        return dynamic_table[ind];
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << '\n';
-    }
+    return dynamic_table[idx];
 }
 
+/* Return reference to the element at index idx. */
 template <typename T>
-T& Vector<T>::operator[](size_t ind)
+T& Vector<T>::operator[](const size_t idx) noexcept
 {
-    try {
-        return dynamic_table[ind];
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << '\n';
-    }
+    return dynamic_table[idx];
+}
+
+/* Returns a constant reference to the element at position pos.
+   Throw out_of_range if pos >= size of thge container. */
+template <typename T>
+const T& Vector<T>::at(const size_t pos) const
+{
+    valid_idx(pos);
+    return dynamic_table[pos];
+}
+
+/* Returns a reference to the element at position pos.
+   Throw out_of_range if pos >= size of thge container. */
+template <typename T>
+T& Vector<T>::at(const size_t pos)
+{
+    valid_idx(pos);
+    return dynamic_table[pos];
+}
+
+/* Returns pointer to the underlying array. */
+template <typename T>
+T* Vector<T>::data() const
+{
+    return dynamic_table;
 }
 
 template <typename T>
@@ -153,6 +245,29 @@ void Vector<T>::push_back(const T& push_node)
     }
 
     dynamic_table[size] = push_node;
+
+    ++size;
+}
+
+/* Insert value before pos. Pos must be the pointer to
+   one element of the vector. */
+template <typename T>
+void Vector<T>::insert(T* pos, const T& value)
+{
+    size_t idx = 0;
+    for (auto i = begin(); i != pos; ++i) {
+        ++idx;
+    }
+
+    if (size == capacity) {
+        reserve(capacity * 2);
+    }
+
+    for (auto i = size; i != idx; --i) {
+        dynamic_table[i] = dynamic_table[i - 1];
+    }
+
+    dynamic_table[idx] = value;
 
     ++size;
 }
@@ -187,6 +302,7 @@ T* Vector<T>::find(const T& node)
     return &dynamic_table[size];
 }
 
+/* Removes node */
 template <typename T>
 T* Vector<T>::remove(const T& node)
 {
@@ -203,11 +319,33 @@ T* Vector<T>::remove(const T& node)
     return ++elem;
 }
 
+/* Erases all elements in the containter.
+   After clear method size_() returns 0. */
 template <typename T>
-void Vector<T>::copy_helper(T*& t1, T*& t2, const size_t n)
+void Vector<T>::clear() noexcept
+{
+    delete[] dynamic_table;
+
+    dynamic_table = new T[capacity];
+
+    size = 0;
+}
+
+/* Copyes n elements from vector t2 to vector t1. */
+template <typename T>
+void Vector<T>::copy_helper(T*& t1, const T* const& t2, const size_t n)
 {
     for (size_t x = 0; x != n; ++x) {
         t1[x] = t2[x];
+    }
+}
+
+/* Validates the index of the vector. */
+template <typename T>
+void Vector<T>::valid_idx(const size_t idx, const std::string& msg) const
+{
+    if (idx >= size) {
+        throw std::out_of_range(msg);
     }
 }
 
@@ -220,4 +358,22 @@ std::ostream& operator<<(std::ostream& os, const Vector<TYPE>& v)
     os << '\n';
 
     return os;
+}
+
+template <typename TYPE>
+bool operator==(const Vector<TYPE>& v1, const Vector<TYPE>& v2)
+{
+    if (v1.size_() != v2.size_()) {
+        return 0;
+    }
+
+    for (auto i1 = v1.begin(), i2 = v2.begin();
+         i1 != v1.end() && i2 != v2.end();
+         ++i1, ++i2) {
+        if (*i1 != *i2) {
+            return 0;
+        }
+    }
+
+    return 1;
 }
