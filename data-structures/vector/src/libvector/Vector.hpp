@@ -32,7 +32,7 @@ public:
         }
     }
 
-    Vector(const T* const arr, size_t s) : Vector(s)
+    Vector(const T* const arr, const size_t s) : Vector(s)
     {
         for (size_t i = 0; i != s; ++i) {
             push_back(arr[i]);
@@ -41,6 +41,17 @@ public:
 
     Vector(Vector<T>& v_copy) : Vector(v_copy.dynamic_table, v_copy.size)
     {
+    }
+
+    Vector<T>& operator=(const Vector<T>& vec)
+    {
+        clear();
+
+        for (size_t i = 0; i != vec.size_(); ++i) {
+            push_back(vec[i]);
+        }
+
+        return *this;
     }
 
     ~Vector();
@@ -66,7 +77,10 @@ public:
     T* data() const;
 
     void push_back(const T& push_node);
+
     void insert(T* pos, const T& value);
+    void insert(T* pos, size_t count, const T& value);
+    void insert(T* pos, T* beg, T* end);
 
     bool contains_node(const T& node) const;
     T* find(const T& node);
@@ -235,7 +249,7 @@ void Vector<T>::push_back(const T& push_node)
 
         delete[] dynamic_table;
 
-        dynamic_table = new T[size * 2];
+        dynamic_table = new T[size * 2 + 1];
 
         copy_helper(dynamic_table, helper, size);
 
@@ -270,6 +284,67 @@ void Vector<T>::insert(T* pos, const T& value)
     dynamic_table[idx] = value;
 
     ++size;
+}
+
+/* Insert count values before pos. Pos must be the pointer to
+   one element of the vector. */
+template <typename T>
+void Vector<T>::insert(T* pos, size_t count, const T& value)
+{
+    if (count == 0) {
+        return;
+    }
+
+    size_t idx = 0;
+    for (auto i = begin(); i != pos; ++i) {
+        ++idx;
+    }
+
+    for (size_t i = 0; i != count; ++i) {
+        auto current_pos = begin();
+        for (size_t i = 0; i != idx; ++i) {
+            ++current_pos;
+        }
+        insert(current_pos, value);
+    }
+}
+
+/* Insert values in range(beg, end) before pos. Pos, beg, end must be the
+   pointers to one element of the vector. */
+template <typename T>
+void Vector<T>::insert(T* pos, T* beg, T* end)
+{
+    if (beg == end) {
+        return;
+    }
+
+    size_t count = 0;
+    T* tmp_beg = beg;
+    while (tmp_beg != end) {
+        ++tmp_beg;
+        ++count;
+    }
+
+    T* insertable_arr = new T[count];
+    for (size_t i = 0; i != count; ++i) {
+        insertable_arr[i] = *beg;
+        ++beg;
+    }
+
+    size_t idx = 0;
+    for (auto i = begin(); i != pos; ++i) {
+        ++idx;
+    }
+
+    for (int i = count - 1; i >= 0; --i) {
+        auto current_pos = begin();
+        for (size_t j = 0; j != idx; ++j) {
+            ++current_pos;
+        }
+        insert(current_pos, insertable_arr[i]);
+    }
+
+    delete[] insertable_arr;
 }
 
 template <typename T>
@@ -324,9 +399,9 @@ T* Vector<T>::remove(const T& node)
 template <typename T>
 void Vector<T>::clear() noexcept
 {
-    delete[] dynamic_table;
+    // delete[] dynamic_table;
 
-    dynamic_table = new T[capacity];
+    // dynamic_table = new T[capacity];
 
     size = 0;
 }
@@ -353,7 +428,7 @@ template <typename TYPE>
 std::ostream& operator<<(std::ostream& os, const Vector<TYPE>& v)
 {
     for (size_t x = 0; x != v.size_(); ++x) {
-        os << v.dynamic_table[x] << ' ';
+        os << v[x] << ' ';
     }
     os << '\n';
 

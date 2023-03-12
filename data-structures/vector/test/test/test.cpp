@@ -4,6 +4,37 @@
 
 #include <iostream>
 
+// TEST(Vector, RO5)
+// {
+//     // Copy constructor
+//     {
+//         Vector<int> vec{1, 2, 3, 4, 5};
+//         Vector<int> cpy_vec(vec);
+
+//         ASSERT_EQ(vec, cpy_vec);
+
+//         Vector<int> vec_mt;
+//         Vector<int> cpy_vec_mt(vec_mt);
+
+//         ASSERT_EQ(vec_mt, cpy_vec_mt);
+//     }
+
+//     // Operator =
+//     {
+//         Vector<int> vec{1, 2, 3, 4, 5};
+//         Vector<int> cpy_vec;
+//         cpy_vec = vec;
+
+//         // ASSERT_EQ(vec, cpy_vec);
+
+//         // Vector<int> vec_mt;
+//         // Vector<int> cpy_vec_mt;
+//         // cpy_vec_mt = vec_mt;
+
+//         // ASSERT_EQ(vec_mt, cpy_vec_mt);
+//     }
+// }
+
 TEST(Vector, ElementAccess)
 {
     // At
@@ -120,12 +151,47 @@ TEST(Vector, Modifiers)
         ASSERT_EQ(v.capacity_(), 5);
     }
 
-    // Insert
+    // Insert(pointer, value)
     {
         Vector<int> v{0, 1, 2, 3, 4};
 
         v.insert(v.begin() + 2, 0);
         ASSERT_EQ(v, Vector<int>({0, 1, 0, 2, 3, 4}));
+
+        v.insert(v.begin(), 0);
+        ASSERT_EQ(v, Vector<int>({0, 0, 1, 0, 2, 3, 4}));
+
+        v.insert(v.end(), 0);
+        ASSERT_EQ(v, Vector<int>({0, 0, 1, 0, 2, 3, 4, 0}));
+    }
+
+    // Insert(pointer, count, value)
+    {
+        Vector<int> v{0, 1, 2, 3, 4};
+
+        v.insert(v.begin() + 2, 3, 0);
+        ASSERT_EQ(v, Vector<int>({0, 1, 0, 0, 0, 2, 3, 4}));
+
+        v.insert(v.begin(), 2, 0);
+        ASSERT_EQ(v, Vector<int>({0, 0, 0, 1, 0, 0, 0, 2, 3, 4}));
+
+        v.insert(v.end(), 1, 0);
+        ASSERT_EQ(v, Vector<int>({0, 0, 0, 1, 0, 0, 0, 2, 3, 4, 0}));
+    }
+
+    // Insert(pointer, p_beg, p_end)
+    {
+        Vector<int> v{0, 1, 2, 3, 4};
+
+        v.insert(v.begin(), v.begin(), v.begin() + 2);
+        ASSERT_EQ(v, Vector<int>({0, 1, 0, 1, 2, 3, 4}));
+
+        v.insert(v.begin() + 2, v.begin() + 3, v.begin() + 6);
+        ASSERT_EQ(v, Vector<int>({0, 1, 1, 2, 3, 0, 1, 2, 3, 4}));
+
+        v.insert(v.end(), v.begin(), v.end());
+        ASSERT_EQ(v, Vector<int>({0, 1, 1, 2, 3, 0, 1, 2, 3, 4,
+                                  0, 1, 1, 2, 3, 0, 1, 2, 3, 4}));
     }
 }
 
