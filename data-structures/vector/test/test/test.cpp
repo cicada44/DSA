@@ -192,6 +192,30 @@ TEST(Vector, Modifiers)
         v.insert(v.end(), v.begin(), v.end());
         ASSERT_EQ(v, Vector<int>({0, 1, 1, 2, 3, 0, 1, 2, 3, 4,
                                   0, 1, 1, 2, 3, 0, 1, 2, 3, 4}));
+
+        Vector<int> v2(10);
+
+        v2.insert(v2.begin(), v.begin(), v.end());
+        ASSERT_EQ(v2, Vector<int>({0, 1, 1, 2, 3, 0, 1, 2, 3, 4,
+                                   0, 1, 1, 2, 3, 0, 1, 2, 3, 4}));
+    }
+
+    // Insert(pointer, init_list)
+    {
+        Vector<int> v{0, 1, 2, 3, 4};
+
+        v.insert(v.end(), {5, 6});
+        ASSERT_EQ(v, Vector<int>({0, 1, 2, 3, 4, 5, 6}));
+
+        v.insert(v.begin() + 3, {0, 0, 0});
+        ASSERT_EQ(v, Vector<int>({0, 1, 2, 0, 0, 0, 3, 4, 5, 6}));
+    }
+}
+
+TEST(Vector, Finders) {
+    // Contains_node
+    {
+        
     }
 }
 

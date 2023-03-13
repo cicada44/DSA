@@ -79,11 +79,13 @@ public:
     void push_back(const T& push_node);
 
     void insert(T* pos, const T& value);
-    void insert(T* pos, size_t count, const T& value);
-    void insert(T* pos, T* beg, T* end);
+    void insert(T* pos, const size_t count, const T& value);
+    void insert(T* pos, const T* beg, const T* end);
+    void insert(T* pos, const std::initializer_list<T>& il);
 
     bool contains_node(const T& node) const;
     T* find(const T& node);
+    const T* find(const T& node) const;
 
     T* remove(const T& node);
     void clear() noexcept;
@@ -289,7 +291,7 @@ void Vector<T>::insert(T* pos, const T& value)
 /* Insert count values before pos. Pos must be the pointer to
    one element of the vector. */
 template <typename T>
-void Vector<T>::insert(T* pos, size_t count, const T& value)
+void Vector<T>::insert(T* pos, const size_t count, const T& value)
 {
     if (count == 0) {
         return;
@@ -309,17 +311,17 @@ void Vector<T>::insert(T* pos, size_t count, const T& value)
     }
 }
 
-/* Insert values in range(beg, end) before pos. Pos, beg, end must be the
-   pointers to one element of the vector. */
+/* Insert values in range(beg, end) before pos. Pos must be the
+   pointer to the element of the vector. */
 template <typename T>
-void Vector<T>::insert(T* pos, T* beg, T* end)
+void Vector<T>::insert(T* pos, const T* beg, const T* end)
 {
     if (beg == end) {
         return;
     }
 
     size_t count = 0;
-    T* tmp_beg = beg;
+    const T* tmp_beg = beg;
     while (tmp_beg != end) {
         ++tmp_beg;
         ++count;
@@ -332,7 +334,7 @@ void Vector<T>::insert(T* pos, T* beg, T* end)
     }
 
     size_t idx = 0;
-    for (auto i = begin(); i != pos; ++i) {
+    for (auto i = cbegin(); i != pos; ++i) {
         ++idx;
     }
 
@@ -347,12 +349,33 @@ void Vector<T>::insert(T* pos, T* beg, T* end)
     delete[] insertable_arr;
 }
 
+/* Insert values in il before pos. Pos must be the
+   pointer to the element of the vector. */
+template <typename T>
+void Vector<T>::insert(T* pos, const std::initializer_list<T>& il)
+{
+    size_t idx = 0;
+    for (auto i = begin(); i != pos; ++i) {
+        ++idx;
+    }
+
+    for (auto i = il.end() - 1; i >= il.begin(); --i) {
+        auto current_pos = begin();
+        for (size_t i = 0; i != idx; ++i) {
+            ++current_pos;
+        }
+        insert(current_pos, *i);
+    }
+}
+
+/* Removes the last element from the vector. */
 template <typename T>
 void Vector<T>::pop_back()
 {
-    --size;
+    --size; // :)
 }
 
+/* Returns 1 if node is in the vector, 0 - if not. */
 template <typename T>
 bool Vector<T>::contains_node(const T& node) const
 {
@@ -365,6 +388,9 @@ bool Vector<T>::contains_node(const T& node) const
     return 0;
 }
 
+/* Finds element node in the vector.
+   Returns pointer to element. If element isn't in containter return
+   end(). */
 template <typename T>
 T* Vector<T>::find(const T& node)
 {
@@ -374,7 +400,22 @@ T* Vector<T>::find(const T& node)
         }
     }
 
-    return &dynamic_table[size];
+    return end();
+}
+
+/* Finds element node in the vector.
+   Returns constant pointer to element. If element isn't in containter return
+   end(). */
+template <typename T>
+const T* Vector<T>::find(const T& node) const
+{
+    for (size_t x = 0; x != size; ++x) {
+        if (dynamic_table[x] == node) {
+            return &dynamic_table[x];
+        }
+    }
+
+    return end();
 }
 
 /* Removes node */
