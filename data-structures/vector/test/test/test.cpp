@@ -4,36 +4,64 @@
 
 #include <iostream>
 
-// TEST(Vector, RO5)
-// {
-//     // Copy constructor
-//     {
-//         Vector<int> vec{1, 2, 3, 4, 5};
-//         Vector<int> cpy_vec(vec);
+TEST(Vector, RO5)
+{
+    // Copy constructor
+    {
+        Vector<int> vec{1, 2, 3, 4, 5};
+        Vector<int> cpy_vec(vec);
 
-//         ASSERT_EQ(vec, cpy_vec);
+        ASSERT_EQ(vec, cpy_vec);
 
-//         Vector<int> vec_mt;
-//         Vector<int> cpy_vec_mt(vec_mt);
+        Vector<int> vec_mt;
+        Vector<int> cpy_vec_mt(vec_mt);
 
-//         ASSERT_EQ(vec_mt, cpy_vec_mt);
-//     }
+        ASSERT_EQ(vec_mt, cpy_vec_mt);
+    }
 
-//     // Operator =
-//     {
-//         Vector<int> vec{1, 2, 3, 4, 5};
-//         Vector<int> cpy_vec;
-//         cpy_vec = vec;
+    // Move constructor
+    {
+        Vector<int> vec{1, 2, 3, 4, 5};
+        Vector<int> cpy_vec(std::move(vec));
 
-//         // ASSERT_EQ(vec, cpy_vec);
+        ASSERT_EQ(cpy_vec, Vector<int>({1, 2, 3, 4, 5}));
 
-//         // Vector<int> vec_mt;
-//         // Vector<int> cpy_vec_mt;
-//         // cpy_vec_mt = vec_mt;
+        Vector<int> vec_mt;
+        Vector<int> cpy_vec_mt(std::move(vec_mt));
 
-//         // ASSERT_EQ(vec_mt, cpy_vec_mt);
-//     }
-// }
+        ASSERT_EQ(vec_mt, cpy_vec_mt);
+    }
+
+    // Operator =
+    {
+        Vector<int> vec{1, 2, 3, 4, 5};
+        Vector<int> cpy_vec;
+        cpy_vec = vec;
+
+        ASSERT_EQ(vec, cpy_vec);
+
+        Vector<int> vec_mt;
+        Vector<int> cpy_vec_mt;
+        cpy_vec_mt = vec_mt;
+
+        ASSERT_EQ(vec_mt, cpy_vec_mt);
+    }
+
+    // Move operator =
+    {
+        Vector<int> vec{1, 2, 3, 4, 5};
+        Vector<int> cpy_vec;
+        cpy_vec = std::move(vec);
+
+        ASSERT_EQ(cpy_vec, Vector<int>({1, 2, 3, 4, 5}));
+
+        Vector<int> vec_mt;
+        Vector<int> cpy_vec_mt;
+        cpy_vec_mt = std::move(vec_mt);
+
+        ASSERT_EQ(cpy_vec_mt, Vector<int>());
+    }
+}
 
 TEST(Vector, ElementAccess)
 {
@@ -86,7 +114,7 @@ TEST(Vector, ElementAccess)
         const Vector<int> v{0, 1, 2, 3, 4};
 
         size_t cnter = 0;
-        for (auto i = v.data(); i != v.data() + v.size_(); ++i) {
+        for (auto i = v.data(); i != v.data() + v.size(); ++i) {
             ASSERT_EQ(*i, cnter);
             ++cnter;
         }
@@ -103,9 +131,9 @@ TEST(Vector, Capacity)
 
     // Size
     {
-        ASSERT_EQ(Vector<int>({0, 1, 2, 3, 4}).size_(), 5);
-        ASSERT_EQ(Vector<int>({0}).size_(), 1);
-        ASSERT_EQ(Vector<int>().size_(), 0);
+        ASSERT_EQ(Vector<int>({0, 1, 2, 3, 4}).size(), 5);
+        ASSERT_EQ(Vector<int>({0}).size(), 1);
+        ASSERT_EQ(Vector<int>().size(), 0);
     }
 
     // Reserve & capacity
@@ -114,17 +142,17 @@ TEST(Vector, Capacity)
 
         ASSERT_EQ(v, Vector<int>({0, 1, 2, 3, 4}));
         v.reserve(30);
-        ASSERT_EQ(v.capacity_(), 30);
+        ASSERT_EQ(v.capacity(), 30);
 
         v.reserve(5);
-        ASSERT_EQ(v.capacity_(), 30);
+        ASSERT_EQ(v.capacity(), 30);
     }
 
     // Capacity
     {
-        ASSERT_LE(Vector<int>({0, 1, 2, 3, 4}).capacity_(), 30);
-        ASSERT_EQ(Vector<int>({0}).capacity_(), 1);
-        ASSERT_EQ(Vector<int>().capacity_(), 0);
+        ASSERT_LE(Vector<int>({0, 1, 2, 3, 4}).capacity(), 30);
+        ASSERT_EQ(Vector<int>({0}).capacity(), 1);
+        ASSERT_EQ(Vector<int>().capacity(), 0);
     }
 
     // Shrink_to_fit
@@ -132,11 +160,11 @@ TEST(Vector, Capacity)
         Vector<int> v{0, 1, 2, 3, 4};
 
         v.shrink_to_fit();
-        ASSERT_EQ(v.capacity_(), 5);
+        ASSERT_EQ(v.capacity(), 5);
 
         v.push_back(5);
         v.shrink_to_fit();
-        ASSERT_EQ(v.capacity_(), 6);
+        ASSERT_EQ(v.capacity(), 6);
     }
 }
 
@@ -148,7 +176,7 @@ TEST(Vector, Modifiers)
 
         v.clear();
         ASSERT_EQ(v, Vector<int>());
-        ASSERT_EQ(v.capacity_(), 5);
+        ASSERT_EQ(v.capacity(), 5);
     }
 
     // Insert(pointer, value)
@@ -212,10 +240,58 @@ TEST(Vector, Modifiers)
     }
 }
 
-TEST(Vector, Finders) {
+TEST(Vector, Finders)
+{
     // Contains_node
     {
-        
+        Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+
+        ASSERT_EQ(v.contains_node(1), true);
+        ASSERT_EQ(v.contains_node(10), false);
+    }
+
+    // Find(node)
+    {
+        Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+
+        ASSERT_EQ(v.find(1) != v.end(), true);
+        ASSERT_EQ(v.find(10) == v.end(), true);
+    }
+}
+
+TEST(Vector, Remove)
+{
+    // Remove(node)
+    {
+        Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+
+        for (size_t i = 0; i != 5; ++i) {
+            v.remove_first(i);
+        }
+
+        ASSERT_EQ(v, Vector<int>({5, 6, 7, 8, 9}));
+
+        for (size_t i = 5; i != 10; ++i) {
+            v.remove_first(i);
+        }
+
+        ASSERT_EQ(v, Vector<int>());
+    }
+
+    // Remove(pointer)
+    {
+        Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+
+        v.remove(v.begin());
+        v.remove(v.begin() + 3);
+
+        ASSERT_EQ(v, Vector<int>({2, 3, 4, 6, 7, 8, 9, 0}));
+
+        for (size_t i = 0; i != 7; ++i) {
+            ASSERT_NE(v.remove(&v[0]), v.end());
+        }
+
+        ASSERT_EQ(v, Vector<int>({0}));
     }
 }
 

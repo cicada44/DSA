@@ -10,54 +10,20 @@ class Vector {
     friend std::ostream& operator<<(std::ostream& os, const Vector<TYPE>& v);
 
 public:
-    Vector() : dynamic_table(nullptr), size(0), capacity(0)
-    {
-    }
+    Vector();
+    Vector(const size_t capa);
+    Vector(const std::initializer_list<T>& init_list);
+    Vector(const T* const arr, const size_t s);
 
-    Vector(const size_t capa)
-        : dynamic_table(new T[capa]), size(0), capacity(capa)
-    {
-    }
-
-    Vector(const std::initializer_list<T>& init_list)
-        : dynamic_table(new T[init_list.size()]),
-          size(init_list.size()),
-          capacity(init_list.size())
-    {
-        size_t vec_indexator = 0;
-
-        for (const auto& c : init_list) {
-            dynamic_table[vec_indexator] = c;
-            ++vec_indexator;
-        }
-    }
-
-    Vector(const T* const arr, const size_t s) : Vector(s)
-    {
-        for (size_t i = 0; i != s; ++i) {
-            push_back(arr[i]);
-        }
-    }
-
-    Vector(Vector<T>& v_copy) : Vector(v_copy.dynamic_table, v_copy.size)
-    {
-    }
-
-    Vector<T>& operator=(const Vector<T>& vec)
-    {
-        clear();
-
-        for (size_t i = 0; i != vec.size_(); ++i) {
-            push_back(vec[i]);
-        }
-
-        return *this;
-    }
-
+    /* RO5 */
+    Vector(const Vector<T>& v_copy);
+    Vector(Vector<T>&& v_copy);
+    Vector<T>& operator=(const Vector<T>& vec);
+    Vector<T>& operator=(Vector<T>&& vec);
     ~Vector();
 
-    size_t size_() const;
-    size_t capacity_() const;
+    size_t size() const;
+    size_t capacity() const;
     bool empty() const noexcept;
 
     void reserve(const size_t new_capa);
@@ -73,29 +39,27 @@ public:
 
     const T& at(const size_t pos) const;
     T& at(const size_t pos);
-
     T* data() const;
 
     void push_back(const T& push_node);
-
     void insert(T* pos, const T& value);
     void insert(T* pos, const size_t count, const T& value);
     void insert(T* pos, const T* beg, const T* end);
     void insert(T* pos, const std::initializer_list<T>& il);
 
     bool contains_node(const T& node) const;
-    T* find(const T& node);
-    const T* find(const T& node) const;
+    T* find(const T& node) const;
 
-    T* remove(const T& node);
+    T* remove_first(const T& node);
+    T* remove(const T* node);
     void clear() noexcept;
     void pop_back();
 
 private:
     T* dynamic_table;
 
-    size_t size;
-    size_t capacity;
+    size_t size_;
+    size_t capacity_;
 
     void copy_helper(T*& t1, const T* const& t2, const size_t n);
     void valid_idx(
@@ -103,6 +67,110 @@ private:
             const std::string& msg = std::string("index is out of size")) const;
 };
 
+/* Standard constructor. */
+template <typename T>
+Vector<T>::Vector() : dynamic_table(nullptr), size_(0), capacity_(0)
+{
+}
+
+/* Allocates memory of size capa to the actual vector. */
+template <typename T>
+Vector<T>::Vector(const size_t capa)
+    : dynamic_table(new T[capa]), size_(0), capacity_(capa)
+{
+}
+
+/* std::initializer_list constructor. */
+template <typename T>
+Vector<T>::Vector(const std::initializer_list<T>& init_list)
+    : dynamic_table(new T[init_list.size()]),
+      size_(init_list.size()),
+      capacity_(init_list.size())
+{
+    size_t vec_indexator = 0;
+
+    for (const auto& c : init_list) {
+        dynamic_table[vec_indexator] = c;
+        ++vec_indexator;
+    }
+}
+
+/* Copies elements from array arr of size s to actual vector. */
+template <typename T>
+Vector<T>::Vector(const T* const arr, const size_t s) : Vector(s)
+{
+}
+
+/* Copy constructor. */
+template <typename T>
+Vector<T>::Vector(const Vector<T>& v_copy)
+{
+    dynamic_table = new T[v_copy.capacity_];
+    size_ = v_copy.size_;
+    capacity_ = v_copy.capacity_;
+    for (size_t i = 0; i != size_; ++i) {
+        dynamic_table[i] = v_copy.dynamic_table[i];
+    }
+}
+
+/* Move constructor. */
+template <typename T>
+Vector<T>::Vector(Vector<T>&& v_copy)
+    : size_(std::move(v_copy.size_)), capacity_(std::move(v_copy.capacity_))
+{
+    dynamic_table = new T[v_copy.capacity_];
+    dynamic_table = std::move(v_copy.dynamic_table);
+
+    v_copy.dynamic_table = nullptr;
+    v_copy.size_ = 0;
+    v_copy.capacity_ = 0;
+}
+
+/* Copy assignment operator. */
+template <typename T>
+Vector<T>& Vector<T>::operator=(const Vector<T>& vec)
+{
+    if (vec.dynamic_table == dynamic_table) {
+        return *this;
+    }
+
+    clear();
+
+    delete[] dynamic_table;
+    dynamic_table = new T[vec.size_];
+
+    size_ = vec.size_;
+
+    copy_helper(dynamic_table, vec.dynamic_table, vec.size_);
+
+    return *this;
+}
+
+/* Move assignment operator. */
+template <typename T>
+Vector<T>& Vector<T>::operator=(Vector<T>&& vec)
+{
+    if (vec.dynamic_table == dynamic_table) {
+        return *this;
+    }
+
+    clear();
+
+    delete[] dynamic_table;
+    dynamic_table = new T[vec.size_];
+
+    dynamic_table = std::move(vec.dynamic_table);
+    size_ = std::move(vec.size_);
+    capacity_ = std::move(vec.capacity_);
+
+    vec.dynamic_table = nullptr;
+    vec.size_ = 0;
+    vec.capacity_ = 0;
+
+    return *this;
+}
+
+/* Destructor. */
 template <typename T>
 Vector<T>::~Vector()
 {
@@ -111,32 +179,32 @@ Vector<T>::~Vector()
 
 /* Returns size of actual vector. */
 template <typename T>
-size_t Vector<T>::size_() const
+size_t Vector<T>::size() const
 {
-    return size;
+    return size_;
 }
 
 /* Returns capacity of actual vector. */
 template <typename T>
-size_t Vector<T>::capacity_() const
+size_t Vector<T>::capacity() const
 {
-    return capacity;
+    return capacity_;
 }
 
 /* Returns 1 if vector is empty, 0 - if doesn't. */
 template <typename T>
 bool Vector<T>::empty() const noexcept
 {
-    return (size == 0);
+    return (size_ == 0);
 }
 
 /* Reserves memory for vector if new_capa > capa. */
 template <typename T>
 void Vector<T>::reserve(const size_t new_capa)
 {
-    if (new_capa > capacity) {
-        T* temp = new T[size];
-        copy_helper(temp, dynamic_table, size);
+    if (new_capa > capacity_) {
+        T* temp = new T[size_];
+        copy_helper(temp, dynamic_table, size_);
 
         delete[] dynamic_table;
 
@@ -146,10 +214,10 @@ void Vector<T>::reserve(const size_t new_capa)
             std::cerr << e.what() << '\n';
         }
 
-        copy_helper(dynamic_table, temp, size);
+        copy_helper(dynamic_table, temp, size_);
         delete[] temp;
 
-        capacity = new_capa;
+        capacity_ = new_capa;
     }
 }
 
@@ -157,21 +225,21 @@ void Vector<T>::reserve(const size_t new_capa)
 template <typename T>
 void Vector<T>::shrink_to_fit()
 {
-    T* temp = new T[size];
-    copy_helper(temp, dynamic_table, size);
+    T* temp = new T[size_];
+    copy_helper(temp, dynamic_table, size_);
 
     delete[] dynamic_table;
 
     try {
-        dynamic_table = new T[size];
+        dynamic_table = new T[size_];
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
     }
 
-    copy_helper(dynamic_table, temp, size);
+    copy_helper(dynamic_table, temp, size_);
     delete[] temp;
 
-    capacity = size;
+    capacity_ = size_;
 }
 
 /* Returns pointer to begin of the actual vector. */
@@ -185,7 +253,7 @@ T* Vector<T>::begin() const
 template <typename T>
 T* Vector<T>::end() const
 {
-    return (dynamic_table + size);
+    return (dynamic_table + size_);
 }
 
 /* Returns constant pointer to begin of the actual vector. */
@@ -217,7 +285,7 @@ T& Vector<T>::operator[](const size_t idx) noexcept
 }
 
 /* Returns a constant reference to the element at position pos.
-   Throw out_of_range if pos >= size of thge container. */
+ * Throw out_of_range if pos >= size of thge container. */
 template <typename T>
 const T& Vector<T>::at(const size_t pos) const
 {
@@ -226,7 +294,7 @@ const T& Vector<T>::at(const size_t pos) const
 }
 
 /* Returns a reference to the element at position pos.
-   Throw out_of_range if pos >= size of thge container. */
+ * Throw out_of_range if pos >= size of thge container. */
 template <typename T>
 T& Vector<T>::at(const size_t pos)
 {
@@ -244,29 +312,29 @@ T* Vector<T>::data() const
 template <typename T>
 void Vector<T>::push_back(const T& push_node)
 {
-    if (size == capacity) {
-        T* helper = new T[size];
+    if (size_ == capacity_) {
+        T* helper = new T[size_];
 
-        copy_helper(helper, dynamic_table, size);
+        copy_helper(helper, dynamic_table, size_);
 
         delete[] dynamic_table;
 
-        dynamic_table = new T[size * 2 + 1];
+        dynamic_table = new T[size_ * 2 + 1];
 
-        copy_helper(dynamic_table, helper, size);
+        copy_helper(dynamic_table, helper, size_);
 
         delete[] helper;
 
-        capacity *= 2;
+        capacity_ *= 2;
     }
 
-    dynamic_table[size] = push_node;
+    dynamic_table[size_] = push_node;
 
-    ++size;
+    ++size_;
 }
 
 /* Insert value before pos. Pos must be the pointer to
-   one element of the vector. */
+ * one element of the vector. */
 template <typename T>
 void Vector<T>::insert(T* pos, const T& value)
 {
@@ -275,17 +343,17 @@ void Vector<T>::insert(T* pos, const T& value)
         ++idx;
     }
 
-    if (size == capacity) {
-        reserve(capacity * 2);
+    if (size_ == capacity_) {
+        reserve(capacity_ * 2);
     }
 
-    for (auto i = size; i != idx; --i) {
+    for (auto i = size_; i != idx; --i) {
         dynamic_table[i] = dynamic_table[i - 1];
     }
 
     dynamic_table[idx] = value;
 
-    ++size;
+    ++size_;
 }
 
 /* Insert count values before pos. Pos must be the pointer to
@@ -312,7 +380,7 @@ void Vector<T>::insert(T* pos, const size_t count, const T& value)
 }
 
 /* Insert values in range(beg, end) before pos. Pos must be the
-   pointer to the element of the vector. */
+ * pointer to the element of the vector. */
 template <typename T>
 void Vector<T>::insert(T* pos, const T* beg, const T* end)
 {
@@ -350,7 +418,7 @@ void Vector<T>::insert(T* pos, const T* beg, const T* end)
 }
 
 /* Insert values in il before pos. Pos must be the
-   pointer to the element of the vector. */
+ * pointer to the element of the vector. */
 template <typename T>
 void Vector<T>::insert(T* pos, const std::initializer_list<T>& il)
 {
@@ -379,7 +447,7 @@ void Vector<T>::pop_back()
 template <typename T>
 bool Vector<T>::contains_node(const T& node) const
 {
-    for (int x = 0; x != size; ++x) {
+    for (size_t x = 0; x != size_; ++x) {
         if (node == dynamic_table[x]) {
             return 1;
         }
@@ -389,12 +457,12 @@ bool Vector<T>::contains_node(const T& node) const
 }
 
 /* Finds element node in the vector.
-   Returns pointer to element. If element isn't in containter return
-   end(). */
+ * Returns pointer to element. If element isn't in containter return
+ * end(). */
 template <typename T>
-T* Vector<T>::find(const T& node)
+T* Vector<T>::find(const T& node) const
 {
-    for (size_t x = 0; x != size; ++x) {
+    for (size_t x = 0; x != size_; ++x) {
         if (dynamic_table[x] == node) {
             return &dynamic_table[x];
         }
@@ -403,48 +471,57 @@ T* Vector<T>::find(const T& node)
     return end();
 }
 
-/* Finds element node in the vector.
-   Returns constant pointer to element. If element isn't in containter return
-   end(). */
+/* Removes first found element with value val.
+ * Returns end() if there is not element with value val.
+ * Otherwise - returns pointer to the element next to deleted. */
 template <typename T>
-const T* Vector<T>::find(const T& node) const
+T* Vector<T>::remove_first(const T& val)
 {
-    for (size_t x = 0; x != size; ++x) {
-        if (dynamic_table[x] == node) {
-            return &dynamic_table[x];
-        }
-    }
-
-    return end();
-}
-
-/* Removes node */
-template <typename T>
-T* Vector<T>::remove(const T& node)
-{
-    T* elem = find(node);
+    T* elem = find(val);
 
     if (elem == end()) {
         return end();
     }
 
-    for (auto i = elem; i != end(); ++i) {
+    for (auto i = elem; i != end() - 1; ++i) {
         std::swap(*i, *(i + 1));
     }
+
+    --size_;
 
     return ++elem;
 }
 
-/* Erases all elements in the containter.
-   After clear method size_() returns 0. */
+/* Removes node from container, node must be the pointer to the element in
+ * container. */
+template <typename T>
+T* Vector<T>::remove(const T* node)
+{
+    T* deletable = begin();
+
+    while (deletable != node) {
+        ++deletable;
+    }
+
+    if (deletable == end()) {
+        return end();
+    }
+
+    for (auto i = deletable; i != end() - 1; ++i) {
+        std::swap(*i, *(i + 1));
+    }
+
+    --size_;
+
+    return ++deletable;
+}
+
+/* Erases (literally???) all elements in the containter.
+   After clear method size() returns 0. */
 template <typename T>
 void Vector<T>::clear() noexcept
 {
-    // delete[] dynamic_table;
-
-    // dynamic_table = new T[capacity];
-
-    size = 0;
+    size_ = 0;
 }
 
 /* Copyes n elements from vector t2 to vector t1. */
@@ -460,7 +537,7 @@ void Vector<T>::copy_helper(T*& t1, const T* const& t2, const size_t n)
 template <typename T>
 void Vector<T>::valid_idx(const size_t idx, const std::string& msg) const
 {
-    if (idx >= size) {
+    if (idx >= size_) {
         throw std::out_of_range(msg);
     }
 }
@@ -468,7 +545,7 @@ void Vector<T>::valid_idx(const size_t idx, const std::string& msg) const
 template <typename TYPE>
 std::ostream& operator<<(std::ostream& os, const Vector<TYPE>& v)
 {
-    for (size_t x = 0; x != v.size_(); ++x) {
+    for (size_t x = 0; x != v.size(); ++x) {
         os << v[x] << ' ';
     }
     os << '\n';
@@ -479,7 +556,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<TYPE>& v)
 template <typename TYPE>
 bool operator==(const Vector<TYPE>& v1, const Vector<TYPE>& v2)
 {
-    if (v1.size_() != v2.size_()) {
+    if (v1.size() != v2.size()) {
         return 0;
     }
 
