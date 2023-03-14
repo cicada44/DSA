@@ -41,6 +41,8 @@ public:
     T& at(const size_t pos);
     T* data() const;
 
+    size_t distance(const T* beg, const T* end) const;
+
     void push_back(const T& push_node);
     void insert(T* pos, const T& value);
     void insert(T* pos, const size_t count, const T& value);
@@ -52,6 +54,7 @@ public:
 
     T* remove_first(const T& node);
     T* remove(const T* node);
+    const T* remove(const T* beg, const T* end);
     void clear() noexcept;
     void pop_back();
 
@@ -302,6 +305,19 @@ T& Vector<T>::at(const size_t pos)
     return dynamic_table[pos];
 }
 
+/* Returns count of elements between beg and end. Beg and end must be the
+ * pointers to elements in the actual container */
+template <typename T>
+size_t Vector<T>::distance(const T* beg, const T* end) const
+{
+    size_t dist = 0;
+
+    while (beg++ != end && ++dist)
+        ;
+
+    return dist;
+}
+
 /* Returns pointer to the underlying array. */
 template <typename T>
 T* Vector<T>::data() const
@@ -309,6 +325,7 @@ T* Vector<T>::data() const
     return dynamic_table;
 }
 
+/* Inserts element to the end of the container. */
 template <typename T>
 void Vector<T>::push_back(const T& push_node)
 {
@@ -440,7 +457,7 @@ void Vector<T>::insert(T* pos, const std::initializer_list<T>& il)
 template <typename T>
 void Vector<T>::pop_back()
 {
-    --size; // :)
+    --size_; // :)
 }
 
 /* Returns 1 if node is in the vector, 0 - if not. */
@@ -493,7 +510,8 @@ T* Vector<T>::remove_first(const T& val)
 }
 
 /* Removes node from container, node must be the pointer to the element in
- * container. */
+ * container. Returns end() if there is not element with value val.
+ * Otherwise - returns pointer to the element next to deleted. */
 template <typename T>
 T* Vector<T>::remove(const T* node)
 {
@@ -516,8 +534,24 @@ T* Vector<T>::remove(const T* node)
     return ++deletable;
 }
 
+/* Removes elements in range (beg, end). Beg and range must be the pointers to
+ * the actual container. Returns end() if there is not element with value val.
+ * Otherwise - returns pointer to the element next to last deleted. */
+template <typename T>
+const T* Vector<T>::remove(const T* beg, const T* end)
+{
+    const T* deletable = beg;
+
+    while (deletable != end) {
+        remove(beg);
+        ++deletable;
+    }
+
+    return ++deletable;
+}
+
 /* Erases (literally???) all elements in the containter.
-   After clear method size() returns 0. */
+ * After clear method size() returns 0. */
 template <typename T>
 void Vector<T>::clear() noexcept
 {

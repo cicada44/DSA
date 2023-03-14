@@ -119,6 +119,14 @@ TEST(Vector, ElementAccess)
             ++cnter;
         }
     }
+
+    // distance
+    {
+        Vector<int> v{0, 1, 2, 3, 4, 5};
+
+        ASSERT_EQ(v.distance(v.begin(), v.end()), 6);
+        ASSERT_EQ(v.distance(&v[1], &v[3]), 2);
+    }
 }
 
 TEST(Vector, Capacity)
@@ -177,6 +185,19 @@ TEST(Vector, Modifiers)
         v.clear();
         ASSERT_EQ(v, Vector<int>());
         ASSERT_EQ(v.capacity(), 5);
+    }
+
+    // push_back
+    {
+        Vector<int> v{1, 2};
+
+        v.push_back(3);
+        ASSERT_EQ(v, Vector<int>({1, 2, 3}));
+
+        Vector<int> v_mt;
+
+        v_mt.push_back(1);
+        ASSERT_EQ(v_mt, Vector<int>({1}));
     }
 
     // Insert(pointer, value)
@@ -292,6 +313,31 @@ TEST(Vector, Remove)
         }
 
         ASSERT_EQ(v, Vector<int>({0}));
+    }
+
+    // Remove(beg, end)
+    {
+        Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+
+        v.remove(v.begin(), v.begin() + 3);
+
+        ASSERT_EQ(v, Vector<int>({4, 5, 6, 7, 8, 9, 0}));
+
+        v.remove(v.begin(), v.end());
+
+        ASSERT_EQ(v, Vector<int>());
+    }
+
+    // pop_back()
+    {
+        Vector<int> v{1, 2, 3};
+
+        v.pop_back();
+        ASSERT_EQ(v, Vector<int>({1, 2}));
+
+        v.pop_back();
+        v.pop_back();
+        ASSERT_EQ(v, Vector<int>());
     }
 }
 
