@@ -203,15 +203,15 @@ void list<T, allocator>::pop_back() {
     }
 
     node<T>* prev = nullptr;
-    node<T>* deleted = head;
+    node<T>* deletable = head;
 
-    while (deleted->next != nullptr) {
-        prev = deleted;
-        deleted = deleted->next;
+    while (deletable->next != nullptr) {
+        prev = deletable;
+        deletable = deletable->next;
     }
 
     if (prev == nullptr) {
-        delete head;
+        allctr.deallocate(head, sizeof(*head));
         head = nullptr;
         return;
     }
@@ -219,7 +219,8 @@ void list<T, allocator>::pop_back() {
     tail = prev;
     tail->next = nullptr;
 
-    delete deleted;
+    allctr.deallocate(deletable, sizeof(*deletable));
+
     --size_;
 }
 
@@ -251,9 +252,10 @@ void list<T, allocator>::pop_front() {
         return;
     }
 
-    node<T>* remove = head;
+    node<T>* deletable = head;
     head = head->next;
-    delete remove;
+    allctr.deallocate(deletable, sizeof(*deletable));
+
     --size_;
 }
 
@@ -276,10 +278,10 @@ list<T>& list<T, allocator>::erase(const size_t idx) {
         return *this;
     }
 
-    node<T>* rem = temp_head->next;
+    node<T>* deletable = temp_head->next;
     temp_head->next = temp_head->next->next;
 
-    delete rem;
+    allctr.deallocate(deletable, sizeof(*deletable));
 
     --size_;
 
@@ -309,10 +311,10 @@ list<T>& list<T, allocator>::erase_first(const T& v) {
         return *this;
     }
 
-    node<T>* rem = temp_head->next;
+    node<T>* deletable = temp_head->next;
     temp_head->next = temp_head->next->next;
 
-    delete rem;
+    allctr.deallocate(deletable, sizeof(*deletable));
 
     --size_;
 
@@ -333,23 +335,23 @@ list<T>& list<T, allocator>::erase_last(const T& v) {
     }
 
     node<T>* temp_head = head;
-    node<T>* nbeforedeleted = nullptr;
+    node<T>* nbeforedeletable = nullptr;
 
     while (temp_head->next != nullptr) {
         if (temp_head->next->value == v) {
-            nbeforedeleted = temp_head;
+            nbeforedeletable = temp_head;
         }
         temp_head = temp_head->next;
     }
 
-    if (nbeforedeleted == nullptr) {
+    if (nbeforedeletable == nullptr) {
         return *this;
     }
 
-    node<T>* rem = nbeforedeleted->next;
-    nbeforedeleted->next = nbeforedeleted->next->next;
+    node<T>* deletable = nbeforedeletable->next;
+    nbeforedeletable->next = nbeforedeletable->next->next;
 
-    delete rem;
+    allctr.deallocate(deletable, sizeof(*deletable));
 
     --size_;
 
@@ -445,7 +447,8 @@ const node<T>& list<T, allocator>::operator[](const size_t idx) const {
 template <typename T, typename allocator>
 void list<T, allocator>::clear() {
     while (head != nullptr) {
-        delete std::exchange(head, head->next);
+        node<T>* deletable = std::exchange(head, head->next);
+        allctr.deallocate(deletable, sizeof(*deletable));
     }
 }
 
