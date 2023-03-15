@@ -1,12 +1,14 @@
 #pragma once
 
-#include <utility>
+#include <memory>
 #include <new>
+#include <utility>
 
 #include <iostream>
 
 template <typename T>
 struct node {
+    node() : next(nullptr) {}
     node(const T& val) : value(val), next(nullptr) {}
 
     T value;
@@ -15,48 +17,20 @@ struct node {
 
 namespace list {
 
-template <typename T>
+template <typename T, typename allocator = std::allocator<node<T>>>
 class list {
-    template <typename U>
-    friend std::ostream& print_list(std::ostream& os, list<U>& l);
-
     template <typename LT>
     friend bool operator==(const list<LT>& lst1, const list<LT>& lst2);
 
 public:
-    list() : head(nullptr), tail(nullptr), size_(0) {}
+    list();
+    list(list<T>&& l);
+    list<T>& operator=(list<T>& l);
+    list<T>& operator=(list<T>&& l);
+    ~list();
 
-    inline list(const std::initializer_list<T>& init) {
-        for (const auto& c : init) {
-            push_back(c);
-        }
-        size_ = init.size();
-    }
-
-    list(const list<T>& l) { copy(l); }
-
-    list(list<T>&& l) {
-        std::swap(head, l.head);
-        std::swap(tail, l.tail);
-        std::swap(size_, l.size_);
-    }
-
-    list<T>& operator=(list<T>& l) {
-        clear();
-        copy(l);
-
-        return *this;
-    }
-
-    list<T>& operator=(list<T>&& l) {
-        std::swap(head, l.head);
-        std::swap(tail, l.tail);
-        std::swap(size_, l.size_);
-
-        return *this;
-    }
-
-    ~list() { clear(); }
+    list(const std::initializer_list<T>& init);
+    list(const list<T>& l);
 
     bool is_empty() const;
     size_t size() const;
@@ -95,69 +69,135 @@ private:
     node<T>* head = nullptr;
     node<T>* tail = nullptr;
     size_t size_ = 0;
+
+    std::allocator<node<T>> allctr;
+
+    inline node<T>* alloc_node(const T& value) {
+        node<T>* newnode = allctr.allocate(1);
+        new (newnode) node<T>(value);
+        return newnode;
+    }
 };
 
+/* Standard constructor. */
+template <typename T, typename allocator>
+list<T, allocator>::list() : head(nullptr), tail(nullptr), size_(0) {}
+
+/* std::initializer_list constructor. */
+template <typename T, typename allocator>
+list<T, allocator>::list(const std::initializer_list<T>& init)
+    : head(nullptr), tail(nullptr), size_(init.size()) {
+    if (init.size() != 0) {
+        node<T>* new_node = new node<T>(*init.begin());
+
+        head = tail = new_node;
+
+        for (auto c = init.begin() + 1; c != init.end(); ++c) {
+            new_node = new node<T>(*c);
+            tail->next = new_node;
+            tail = new_node;
+        }
+    }
+}
+
+/* Copy constructor. */
+template <typename T, typename allocator>
+list<T, allocator>::list(const list<T>& l) {
+    copy(l);
+}
+
+/* Move constructor. */
+template <typename T, typename allocator>
+list<T, allocator>::list(list<T>&& l) {
+    std::swap(head, l.head);
+    std::swap(tail, l.tail);
+    std::swap(size_, l.size_);
+
+    l.tail = l.head = nullptr;
+    l.size_ = 0;
+}
+
+/* Copy assignment operator. */
+template <typename T, typename allocator>
+list<T>& list<T, allocator>::operator=(list<T>& l) {
+    clear();
+    copy(l);
+
+    return *this;
+}
+
+/* Move assingment opreator. */
+template <typename T, typename allocator>
+list<T>& list<T, allocator>::operator=(list<T>&& l) {
+    std::swap(head, l.head);
+    std::swap(tail, l.tail);
+    std::swap(size_, l.size_);
+
+    return *this;
+}
+
+/* Destructor. */
+template <typename T, typename allocator>
+list<T, allocator>::~list() {
+    clear();
+}
+
 /* Returns true if list is empty. */
-template <typename T>
-bool list<T>::is_empty() const {
-    return (head == nullptr);
+template <typename T, typename allocator>
+bool list<T, allocator>::is_empty() const {
+    return (size_ == 0);
 }
 
 /* Returns number of elements in the list. */
-template <typename T>
-size_t list<T>::size() const {
+template <typename T, typename allocator>
+size_t list<T, allocator>::size() const {
     return size_;
 }
 
 /* Returns pointer to first element in the list. */
-template <typename T>
-node<T>* list<T>::begin() const {
+template <typename T, typename allocator>
+node<T>* list<T, allocator>::begin() const {
     return head;
 }
 
 /* Returns pointer to first element in the list. */
-template <typename T>
-node<T>* list<T>::end() const {
+template <typename T, typename allocator>
+node<T>* list<T, allocator>::end() const {
     return tail;
 }
 
-/* Returns constant pointer on first element in the list. */
-template <typename T>
-const node<T>* list<T>::cbegin() const {
+/* Returns constant pointer to first element in the list. */
+template <typename T, typename allocator>
+const node<T>* list<T, allocator>::cbegin() const {
     return const_cast<const node<T>* const>(head);
 }
 
-/* Returns constant pointer on first element in the list. */
-template <typename T>
-const node<T>* list<T>::cend() const {
+/* Returns constant pointer to first element in the list. */
+template <typename T, typename allocator>
+const node<T>* list<T, allocator>::cend() const {
     return const_cast<const node<T>* const>(tail);
 }
 
 /* Add element to the end of the list. */
-template <typename T>
-void list<T>::push_back(const T& value) {
-    node<T>* new_node = nullptr;
+template <typename T, typename allocator>
+void list<T, allocator>::push_back(const T& value) {
+    node<T>* new_node = alloc_node(value);
 
-    try {
-        new_node = new node<T>(value);
-    } catch (const std::bad_alloc& ba) {
-        std::cout << ba.what() << '\n';
-    }
-
-    if (is_empty()) {
+    if (is_empty()) [[unlikely]] {
         tail = head = new_node;
         ++size_;
         return;
     }
+
     tail->next = new_node;
     tail = new_node;
     ++size_;
 }
 
 /* Removes element from the end of the list.
-   Returns void. */
-template <typename T>
-void list<T>::pop_back() {
+ * Returns void. */
+template <typename T, typename allocator>
+void list<T, allocator>::pop_back() {
     if (is_empty()) {
         return;
     }
@@ -184,16 +224,10 @@ void list<T>::pop_back() {
 }
 
 /* Adds element to the front of the list.
-   Returns void. */
-template <typename T>
-void list<T>::push_front(const T& value) {
-    node<T>* new_front_val = nullptr;
-
-    try {
-        new_front_val = new node(value);
-    } catch (std::bad_alloc& ba) {
-        std::cout << ba.what() << '\n';
-    }
+ * Returns void. */
+template <typename T, typename allocator>
+void list<T, allocator>::push_front(const T& value) {
+    node<T>* new_front_val = alloc_node(value);
 
     node<T>* temp_head = head;
 
@@ -210,9 +244,9 @@ void list<T>::push_front(const T& value) {
 }
 
 /* Removes element from the front of the list.
-   Returns void. */
-template <typename T>
-void list<T>::pop_front() {
+ * Returns void. */
+template <typename T, typename allocator>
+void list<T, allocator>::pop_front() {
     if (is_empty()) {
         return;
     }
@@ -224,9 +258,9 @@ void list<T>::pop_front() {
 }
 
 /* Removes the first encountered elements with value v.
-   Returns reference to the current list. */
-template <typename T>
-list<T>& list<T>::erase(const size_t idx) {
+ * Returns reference to the current list. */
+template <typename T, typename allocator>
+list<T>& list<T, allocator>::erase(const size_t idx) {
     if (is_empty()) {
         return *this;
     }
@@ -253,9 +287,9 @@ list<T>& list<T>::erase(const size_t idx) {
 }
 
 /* Removes the first encountered elements with value v.
-   Returns reference to the current list. */
-template <typename T>
-list<T>& list<T>::erase_first(const T& v) {
+ * Returns reference to the current list. */
+template <typename T, typename allocator>
+list<T>& list<T, allocator>::erase_first(const T& v) {
     if (is_empty()) {
         return *this;
     }
@@ -286,9 +320,9 @@ list<T>& list<T>::erase_first(const T& v) {
 }
 
 /* Removes the last encountered elements with value v.
-   Returns reference to the current list. */
-template <typename T>
-list<T>& list<T>::erase_last(const T& v) {
+ * Returns reference to the current list. */
+template <typename T, typename allocator>
+list<T>& list<T, allocator>::erase_last(const T& v) {
     if (is_empty()) {
         return *this;
     }
@@ -323,9 +357,9 @@ list<T>& list<T>::erase_last(const T& v) {
 }
 
 /* Removes all consecutive duplicate elements from the container.
-   Returns reference to the current list. */
-template <typename T>
-list<T>& list<T>::unique() {
+ * Returns reference to the current list. */
+template <typename T, typename allocator>
+list<T>& list<T, allocator>::unique() {
     node<T>* temp_head = head;
 
     size_t idx_counter = 0;
@@ -343,9 +377,9 @@ list<T>& list<T>::unique() {
 }
 
 /* Checks if an element is in the list.
-   Returns 1 if element's containing. */
-template <typename T>
-bool list<T>::contains(const T& v) const {
+ * Returns 1 if element's containing. */
+template <typename T, typename allocator>
+bool list<T, allocator>::contains(const T& v) const {
     if (is_empty()) {
         return false;
     }
@@ -363,8 +397,8 @@ bool list<T>::contains(const T& v) const {
 }
 
 /* Return number of elements with value v in list. */
-template <typename T>
-size_t list<T>::count(const T& v) const {
+template <typename T, typename allocator>
+size_t list<T, allocator>::count(const T& v) const {
     size_t count = 0;
 
     node<T>* temp_head = head;
@@ -380,8 +414,8 @@ size_t list<T>::count(const T& v) const {
 }
 
 /* Return reference to element in list[idx]. */
-template <typename T>
-node<T>& list<T>::operator[](const size_t idx) {
+template <typename T, typename allocator>
+node<T>& list<T, allocator>::operator[](const size_t idx) {
     node<T>* temp_head = head;
     size_t beg = 0;
 
@@ -394,8 +428,8 @@ node<T>& list<T>::operator[](const size_t idx) {
 }
 
 /* Return const reference to element in list[idx]. */
-template <typename T>
-const node<T>& list<T>::operator[](const size_t idx) const {
+template <typename T, typename allocator>
+const node<T>& list<T, allocator>::operator[](const size_t idx) const {
     node<T>* temp_head = head;
     size_t beg = 0;
 
@@ -408,17 +442,16 @@ const node<T>& list<T>::operator[](const size_t idx) const {
 }
 
 /* Similar to ~list(). */
-template <typename T>
-void list<T>::clear() {
-    while (head) {
+template <typename T, typename allocator>
+void list<T, allocator>::clear() {
+    while (head != nullptr) {
         delete std::exchange(head, head->next);
     }
-    tail = nullptr;
 }
 
 /* Copies l to the current list. */
-template <typename T>
-void list<T>::copy(const list<T>& l) {
+template <typename T, typename allocator>
+void list<T, allocator>::copy(const list<T>& l) {
     if (l.head != nullptr) {
         node<T>* iter = l.head;
 
@@ -432,8 +465,8 @@ void list<T>::copy(const list<T>& l) {
 }
 
 /* Add l to the end of the current list. */
-template <typename T>
-void list<T>::merge(const list<T>& l) {
+template <typename T, typename allocator>
+void list<T, allocator>::merge(const list<T>& l) {
     node<T>* iter = l.head;
 
     while (iter) {
@@ -443,25 +476,14 @@ void list<T>::merge(const list<T>& l) {
 }
 
 /* Add l to the end of the current list. */
-template <typename T>
-void list<T>::merge(list<T>&& l) {
+template <typename T, typename allocator>
+void list<T, allocator>::merge(list<T>&& l) {
     std::swap(tail->next, l.head);
     std::swap(tail, l.tail);
     size_ += l.size_;
-}
 
-template <typename T>
-std::ostream& print_list(std::ostream& os, list<T>& l) {
-    node<T>* head_iter = l.head;
-    while (head_iter != nullptr) {
-        os << head_iter->value;
-        if (head_iter->next != nullptr) {
-            os << " --> ";
-        }
-        head_iter = head_iter->next;
-    }
-
-    return os;
+    l.head = l.tail = nullptr;
+    l.size_ = 0;
 }
 
 // Just for testing.
