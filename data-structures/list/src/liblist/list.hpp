@@ -27,7 +27,7 @@ public:
     list(list<T>&& l);
     list<T>& operator=(list<T>& l);
     list<T>& operator=(list<T>&& l);
-    ~list();
+    virtual ~list();
 
     list(const std::initializer_list<T>& init);
     list(const list<T>& l);
@@ -126,7 +126,7 @@ list<T>& list<T, allocator>::operator=(list<T>& l) {
     return *this;
 }
 
-/* Move assingment opreator. */
+/* Move assingment operator. */
 template <typename T, typename allocator>
 list<T>& list<T, allocator>::operator=(list<T>&& l) {
     std::swap(head, l.head);
@@ -154,25 +154,25 @@ size_t list<T, allocator>::size() const {
     return size_;
 }
 
-/* Returns pointer to first element in the list. */
+/* Returns pointer to the first element in the list. */
 template <typename T, typename allocator>
 node<T>* list<T, allocator>::begin() const {
     return head;
 }
 
-/* Returns pointer to first element in the list. */
+/* Returns pointer to the last element in the list. */
 template <typename T, typename allocator>
 node<T>* list<T, allocator>::end() const {
     return tail;
 }
 
-/* Returns constant pointer to first element in the list. */
+/* Returns constant pointer to the first element in the list. */
 template <typename T, typename allocator>
 const node<T>* list<T, allocator>::cbegin() const {
     return const_cast<const node<T>* const>(head);
 }
 
-/* Returns constant pointer to first element in the list. */
+/* Returns constant pointer to the last element in the list. */
 template <typename T, typename allocator>
 const node<T>* list<T, allocator>::cend() const {
     return const_cast<const node<T>* const>(tail);
@@ -205,7 +205,7 @@ void list<T, allocator>::pop_back() {
     node<T>* prev = nullptr;
     node<T>* deletable = head;
 
-    while (deletable->next != nullptr) {
+    while (deletable != nullptr) {
         prev = deletable;
         deletable = deletable->next;
     }
