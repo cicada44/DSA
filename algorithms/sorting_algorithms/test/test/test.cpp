@@ -1,4 +1,5 @@
 #include "../../src/bubble_sort_lib/bubble_sort.hpp"
+#include "../../src/counting_sort_lib/counting_sort.hpp"
 #include "../../src/heap_sort_lib/heap_sort.hpp"
 #include "../../src/insert_sort_lib/insert_sort.hpp"
 #include "../../src/merge_sort_lib/merge_sort.hpp"
@@ -73,6 +74,20 @@ TEST(Sortings, SortAlgs)
         }
 
         delete[] arr;
+    }
+
+    // Counting sort
+    {
+        int* arr = new int[arr_size]{9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+
+        int* out = counting_sort(arr, arr_size);
+
+        for (int i = 0; i != arr_size; ++i) {
+            ASSERT_EQ(out[i], i);
+        }
+
+        delete[] arr;
+        delete[] out;
     }
 }
 

@@ -1,20 +1,14 @@
-set(target_name test)
+enable_testing()
 
-add_executable(${target_name})
-
-add_compile_options(-Wall -Werror -Wextra -pedantic)
-
-target_sources(
-    ${target_name}
-    PRIVATE
-        test/test.cpp
+add_executable(
+  test
+  test/test.cpp
 )
-
-find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
 
 target_link_libraries(
-    ${target_name}
-    ${GTEST_LIBRARIES}
-    pthread
+  test
+  GTest::gtest_main
 )
+
+include(GoogleTest)
+gtest_discover_tests(test)
