@@ -7,11 +7,11 @@
 <br>
 
 ## **Generate**:
-### *cmake --preset <PRESET_NAME>*
+    cmake --preset <PRESET_NAME>
 <br>
 
 ## **Build**:
-### *cmake --build --preset <PRESET_NAME>*
+    cmake --build --preset <PRESET_NAME>
 
 <br>
 <hr>
@@ -50,3 +50,13 @@
     | -------------------- | ------------ | ------------ |
     | **Time complexity**  | $O(nlog(n))$ | $O(nlog(n))$ |
     | **Space complexity** | $O(1)$       | $O(1)$       |
+
+
+- ## **Counting sort**
+
+    | Complexities         | Average case | Worst case |
+    | -------------------- | ------------ | ---------- |
+    | **Time complexity**  | $O(n + k)$   | $O(n + k)$ |
+    | **Space complexity** | $O(k)$       | $O(k)$     |
+
+    
