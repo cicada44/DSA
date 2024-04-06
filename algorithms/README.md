@@ -1,3 +1,3 @@
 # Algorithms
 
-- ## Sortings (*sorting_algorithms*)
+- [Sorting algorithms](./sorting_algorithms/)

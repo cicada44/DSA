@@ -1,6 +1,6 @@
-# Stack
+# Doubly linked list
 
-Implementation of stack in C++.
+Implementation of doubly linked list in C++.
 
 ## Usage
 

@@ -1,13 +1,14 @@
-# Singly linked list
+# List
 
-## **CMake** **Presets**:
-- ### debug
-- ### releases
+Implementation of list in C++.
 
-<br>
+## Usage
 
-## **Generate**:
-    cmake --preset <PRESET_NAME>
+Follow this steps:
 
-## **Build**:
-    cmake --build --preset <PRESET_NAME>
+### Build:
+    cmake --preset release
+    cmake --build --preset release
+
+### Run
+    ./build/release/bin/app

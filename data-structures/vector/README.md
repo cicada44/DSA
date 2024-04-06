@@ -1,14 +1,14 @@
-# vector
+# Vector
 
-## **CMake** **Presets**:
-- ### debug
-- ### release
+Implementation of vector in C++.
 
-<br>
+## Usage
 
-## **Generate**:
-     cmake --preset <PRESET_NAME>
-<br>
+Follow this steps:
 
-## **Build**:
-     cmake --build --preset <PRESET_NAME>
+### Build:
+    cmake --preset release
+    cmake --build --preset release
+
+### Run
+    ./build/release/bin/app
